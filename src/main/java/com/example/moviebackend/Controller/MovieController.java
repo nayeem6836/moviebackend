@@ -1,70 +1,89 @@
-package com.example.moviebackend.Controller;
+package com.example.moviebackend.controller;
 
-
+import java.security.PublicKey;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.moviebackend.Entity.Movie;
-import com.example.moviebackend.Service.MovieService;
+import com.example.moviebackend.model.Genre;
+import com.example.moviebackend.model.Movie;
+import com.example.moviebackend.service.MovieService;
 
-import jakarta.validation.Valid;
 @RestController
-@RequestMapping("/api/movies")
+@RequestMapping("/api/movie")
+@CrossOrigin(origins = "http://localhost:3000")
+
 public class MovieController {
-    private final MovieService movieService;
-    public MovieController(MovieService movieService){
-        this.movieService = movieService;
-    }
-    @PostMapping("saveMovies")
-    public Movie saved(@Valid @RequestBody Movie m){
-        return movieService.saved(m);
-    }
-    @GetMapping("/movies")
-    public Page<Movie> getAllMovies(
-        @RequestParam(defaultValue = "0") int Page,
-        @RequestParam(defaultValue= "10")int size){
-            return movieService.getAllMovies(Page, size);
-    }
-    @PostMapping("saveBulk")
-    public List<Movie> saveBulk(@RequestBody @Valid List<Movie> m){
-        return movieService.savebulk(m);
-    }
+
+    @Autowired
+    private MovieService movieservice;
+
     @GetMapping("/popular")
-    public List<Movie> getPopularMovies(){
-        return movieService.getPopularMovies();
+    public ResponseEntity<List<Movie>> getPopularMovies() {
+        List<Movie> movies = movieservice.getPopularMovies();
+        if (movies != null) {
+            return ResponseEntity.ok(movies);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-    @GetMapping("/genre/{genre}")
-    public List<Movie> getByGenre (@PathVariable String genre){
-        return movieService.getMoviesByGenre(genre);
+
+    @GetMapping("/genre/{genres}")
+    public ResponseEntity<List<Movie>> getMoviesByGenre(@PathVariable String genres) {
+        List<Movie> movies = movieservice.getMoviesByGenre(genres);
+        if (movies != null) {
+            return ResponseEntity.ok(movies);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-    @GetMapping("findByname/{name}")
-    public Movie getbyname(@PathVariable String name){
-        return movieService.findbyName(name);
+     
+    @GetMapping("/search/{title}")
+    public ResponseEntity<?> getMoviesByName(@PathVariable String title){
+        List<Movie> movies = movieservice.getMoviesByName(title);
+        if(movies!=null){
+            return ResponseEntity.ok(movies);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Movies Not Founds With: "+title);
+        }
     }
-      @GetMapping("Search/{name}")
-    public List<Movie>getSimilar(@PathVariable String name){
-        return movieService.search(name);
-    }
+
+
     @GetMapping("/upcoming")
-    public List<Movie> getUpcomingMovies() {
-        return movieService.getUpcomingMovies();
+    public ResponseEntity<List<Movie>> getUpcomingMovies() {
+        List<Movie> movies = movieservice.getUpcomingMovies();
+        if (movies != null && !movies.isEmpty()) {
+            return ResponseEntity.ok(movies);
+        } else {
+            return ResponseEntity.noContent().build(); 
+        }
     }
-    @GetMapping("/desc")
-    public List<Movie> getMoviesBasedondesc(){
-        return movieService.getMoviesbydesc();
+
+    @GetMapping("/toprated")
+    public ResponseEntity<List<Movie>> getMovieReviews(){
+        List<Movie> movies = movieservice.getMovieReviews();
+        if(movies !=null && !movies.isEmpty()){
+        return  ResponseEntity.ok(movies);
+        }
+        else{
+            return ResponseEntity.noContent().build();
+        }
     }
-    @DeleteMapping("/del/{id}")
-    public String deletemovie(@PathVariable Long id){
-        return movieService.deletemovie(id);
-    }
+
+
+
+    
 
 }
